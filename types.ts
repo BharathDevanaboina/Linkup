@@ -5,21 +5,24 @@ export enum Category {
   WELLNESS = 'Zen Mode', // Was Morning Walk
   EVENT = 'Main Event', // Was Themed Event
   EDUCATION = 'Skill Tree', // Was Tuition
-  CHALLENGE = 'The Gauntlet', // Was Challenge
+  BOUNTY = 'Bounty', // Was The Gauntlet/Challenge
   SERVICE = 'Side Quest', // Was Stand in Line
   RENTAL = 'Safe House', // Was Rent a Place
   COMPANION = 'NPC Rental', // Was Rent a Friend
+  TASK_OTHER = 'Other Task', // NEW: For miscellaneous tasks
   CHAT = 'Confessional', // Was Paid Chat
   ANONYMOUS = 'Ghost Protocol', // Was Anonymous
-  OTHERS = 'Glitch / Wildcard' // NEW
+  OTHERS = 'Glitch / Wildcard' // General Others
 }
 
 export interface User {
   id: string;
   name: string;
+  handle: string; // Added handle
   avatar: string;
   isVerified: boolean;
   rating: number;
+  bio?: string; // Added bio
 }
 
 export interface Post {
@@ -39,6 +42,8 @@ export interface Post {
   expiresAt?: number; // Timestamp for when the post self-destructs
   minRating?: number; // Minimum rating required to view/join
   isLocationPrivate?: boolean; // If true, location is hidden until shared in chat
+  difficulty?: number; // 0 to 100 for Bounties
+  isHighStakes?: boolean; // For extreme Bounties
 }
 
 export interface Message {

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Post, Category } from '../types';
 import { Ghost, Trophy, User, MapPin, Zap } from 'lucide-react';
@@ -53,7 +54,7 @@ export const RadarView: React.FC<RadarViewProps> = ({ posts, onPostSelect }) => 
               Icon = Ghost;
               color = "text-pink-400";
               bg = "bg-pink-500";
-          } else if (blip.category === Category.CHALLENGE) {
+          } else if (blip.category === Category.BOUNTY) {
               Icon = Trophy;
               color = "text-yellow-400";
               bg = "bg-yellow-500";

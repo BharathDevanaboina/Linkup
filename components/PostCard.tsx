@@ -1,8 +1,7 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { Post, Category } from '../types';
-import { MapPin, Users, MessageCircle, Clock, MoreHorizontal, Ghost, Lock, Timer, Zap } from 'lucide-react';
+import { MapPin, Users, MessageCircle, Clock, MoreHorizontal, Ghost, Lock, Timer, Zap, Trophy, Skull } from 'lucide-react';
 import { CURRENT_USER } from '../constants';
 
 interface PostCardProps {
@@ -48,7 +47,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onChat }) => {
                         <span className={`font-bold text-sm mr-2 ${isAnonymous ? 'text-pink-400' : 'text-white'}`}>
                             {isAnonymous ? 'Anonymous' : post.user.name}
                         </span>
-                        {!isAnonymous && <span className="text-zinc-500 text-xs">@{post.user.name.toLowerCase().replace(' ', '')}</span>}
+                        {!isAnonymous && <span className="text-zinc-500 text-xs">{post.user.handle || '@user'}</span>}
                     </div>
                     <div className="flex items-center text-[10px] text-zinc-500 uppercase tracking-wide">
                          <span>{post.category}</span>
@@ -72,8 +71,14 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onChat }) => {
             <div className="flex flex-wrap gap-2 mb-3">
                 {post.reward && (
                     <div className="flex items-center px-2 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded text-yellow-500">
-                        <Zap className="w-3 h-3 mr-1" />
+                        <Trophy className="w-3 h-3 mr-1" />
                         <span className="text-xs font-bold">{post.reward}</span>
+                    </div>
+                )}
+                {post.isHighStakes && (
+                    <div className="flex items-center px-2 py-1 bg-red-900/30 border border-red-500/40 rounded text-red-400">
+                        <Skull className="w-3 h-3 mr-1" />
+                        <span className="text-xs font-bold">HIGH STAKES</span>
                     </div>
                 )}
                 {post.expiresAt && (
@@ -89,6 +94,22 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onChat }) => {
                     </div>
                 )}
             </div>
+
+            {/* Difficulty Bar (if bounty) */}
+            {post.difficulty !== undefined && (
+                <div className="mb-3 max-w-[200px]">
+                     <div className="flex justify-between text-[10px] text-zinc-500 mb-1 uppercase tracking-wider font-bold">
+                         <span>Risk Level</span>
+                         <span className={post.difficulty > 75 ? 'text-red-500' : 'text-yellow-500'}>{post.difficulty}%</span>
+                     </div>
+                     <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+                         <div 
+                           className={`h-full ${post.difficulty > 75 ? 'bg-red-500' : 'bg-yellow-500'}`} 
+                           style={{ width: `${post.difficulty}%` }}
+                         ></div>
+                     </div>
+                </div>
+            )}
 
             {/* Action Bar */}
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-zinc-800/50 max-w-sm">
