@@ -1,28 +1,21 @@
 
 export enum Category {
-  SOCIAL = 'Project X', // Was Social Party
-  RIDE = 'Getaway', // Was Ride Share
-  WELLNESS = 'Zen Mode', // Was Morning Walk
-  EVENT = 'Main Event', // Was Themed Event
-  EDUCATION = 'Skill Tree', // Was Tuition
-  BOUNTY = 'Bounty', // Was The Gauntlet/Challenge
-  SERVICE = 'Side Quest', // Was Stand in Line
-  RENTAL = 'Safe House', // Was Rent a Place
-  COMPANION = 'NPC Rental', // Was Rent a Friend
-  TASK_OTHER = 'Other Task', // NEW: For miscellaneous tasks
-  CHAT = 'Confessional', // Was Paid Chat
-  ANONYMOUS = 'Ghost Protocol', // Was Anonymous
-  OTHERS = 'Glitch / Wildcard' // General Others
+  EVENT = 'Event',
+  TASK = 'Task',
+  BOUNTY = 'Bounty',
+  SECRET = 'Secret'
 }
 
 export interface User {
   id: string;
   name: string;
-  handle: string; // Added handle
+  handle: string;
   avatar: string;
   isVerified: boolean;
   rating: number;
-  bio?: string; // Added bio
+  bio?: string;
+  joinedDate?: string;
+  isPremium?: boolean;
 }
 
 export interface Post {
@@ -33,17 +26,29 @@ export interface Post {
   title: string;
   description: string;
   location: string;
-  price?: string; // e.g. "$20/hr" or "Free"
-  reward?: string; // e.g. "100 Rs" or "My Bike"
+  price?: string; 
+  reward?: string; 
   tags: string[];
-  timestamp: string;
+  timestamp: string | any; // allow Firestore Timestamp
   attendees: number;
+  
+  // Safety & Privacy
   isAnonymous?: boolean;
-  expiresAt?: number; // Timestamp for when the post self-destructs
-  minRating?: number; // Minimum rating required to view/join
-  isLocationPrivate?: boolean; // If true, location is hidden until shared in chat
-  difficulty?: number; // 0 to 100 for Bounties
-  isHighStakes?: boolean; // For extreme Bounties
+  isLocationPrivate?: boolean; 
+  minRating?: number; 
+  
+  // Bounty Specific
+  expiresAt?: number; 
+  difficulty?: number; 
+  isHighStakes?: boolean;
+  
+  // Media
+  mediaUrl?: string | null;
+  
+  // Monetization
+  isBoosted?: boolean;
+  entryFee?: string;
+  createdAt?: any;
 }
 
 export interface Message {
@@ -61,4 +66,12 @@ export interface ChatSession {
   lastMessage: string;
   unreadCount: number;
   isEncrypted: boolean;
+}
+
+export interface Report {
+  id: string;
+  postId: string;
+  reporterId: string;
+  reason: string;
+  timestamp: string;
 }

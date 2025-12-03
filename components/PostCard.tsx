@@ -1,7 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Post, Category } from '../types';
-import { MapPin, Users, MessageCircle, Clock, MoreHorizontal, Ghost, Lock, Timer, Zap, Trophy, Skull } from 'lucide-react';
+import { MapPin, MessageCircle, MoreHorizontal, Ghost, Lock, Timer, Trophy, AlertTriangle, EyeOff } from 'lucide-react';
+import { VerifiedBadge } from './VerifiedBadge';
+import { RiskMeter } from './RiskMeter';
 import { CURRENT_USER } from '../constants';
 
 interface PostCardProps {
@@ -10,126 +12,101 @@ interface PostCardProps {
 }
 
 export const PostCard: React.FC<PostCardProps> = ({ post, onChat }) => {
-  const isAnonymous = post.isAnonymous;
+  const isAnon = post.isAnonymous;
   const isLocked = post.minRating ? CURRENT_USER.rating < post.minRating : false;
-  const [timeLeft, setTimeLeft] = useState<string>('');
 
-  useEffect(() => {
-    if (!post.expiresAt) return;
-    const interval = setInterval(() => {
-      const diff = (post.expiresAt || 0) - Date.now();
-      if (diff <= 0) setTimeLeft('00:00');
-      else {
-        const mins = Math.floor((diff / 1000) / 60);
-        const secs = Math.floor((diff / 1000) % 60);
-        setTimeLeft(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [post.expiresAt]);
-  
   return (
-    <div className={`p-4 border-b border-zinc-800 hover:bg-zinc-900/40 transition-colors cursor-pointer relative group ${isLocked ? 'opacity-50' : ''}`}>
-        
-        {/* Header (User Info) */}
-        <div className="flex justify-between items-start mb-2">
-            <div className="flex items-center">
-                {isAnonymous ? (
-                    <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center mr-3 border border-zinc-700">
-                        <Ghost className="w-4 h-4 text-pink-500" />
+    <div className={`bg-zinc-900/40 border border-zinc-800/50 rounded-2xl p-5 mb-4 hover:border-zinc-700 transition-all ${post.isBoosted ? 'shadow-[0_0_20px_rgba(106,76,255,0.1)] border-violet-500/20' : ''}`}>
+        {/* Header */}
+        <div className="flex justify-between items-start mb-3">
+            <div className="flex items-center gap-3">
+                {isAnon ? (
+                    <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
+                        <Ghost className="w-5 h-5 text-pink-500" />
                     </div>
                 ) : (
-                    <img src={post.user.avatar} className="w-9 h-9 rounded-full mr-3 object-cover border border-zinc-800" alt="" />
+                    <div className="relative">
+                        <img src={post.user.avatar} className="w-10 h-10 rounded-full object-cover bg-zinc-800" alt="" />
+                        {post.user.isVerified && <div className="absolute -bottom-1 -right-1"><VerifiedBadge /></div>}
+                    </div>
                 )}
                 
                 <div>
-                    <div className="flex items-center">
-                        <span className={`font-bold text-sm mr-2 ${isAnonymous ? 'text-pink-400' : 'text-white'}`}>
-                            {isAnonymous ? 'Anonymous' : post.user.name}
+                    <div className="flex items-center gap-2">
+                        <span className={`font-bold text-sm ${isAnon ? 'text-pink-500' : 'text-white'}`}>
+                            {isAnon ? 'Anonymous' : post.user.name}
                         </span>
-                        {!isAnonymous && <span className="text-zinc-500 text-xs">{post.user.handle || '@user'}</span>}
+                        {post.isBoosted && <span className="text-[10px] bg-violet-600/20 text-violet-400 px-1.5 rounded font-bold">PROMOTED</span>}
                     </div>
-                    <div className="flex items-center text-[10px] text-zinc-500 uppercase tracking-wide">
-                         <span>{post.category}</span>
-                         <span className="mx-1">•</span>
+                    <div className="flex items-center text-zinc-500 text-xs mt-0.5 gap-2">
                         <span>{post.timestamp}</span>
+                        {post.location && (
+                            <span className="flex items-center">
+                                {post.isLocationPrivate ? <EyeOff className="w-3 h-3 mr-1" /> : <MapPin className="w-3 h-3 mr-1" />}
+                                {post.isLocationPrivate ? 'Location Blurred' : post.location}
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>
             
-            <button className="text-zinc-500 hover:bg-zinc-800 p-1.5 rounded-full transition-colors">
-                <MoreHorizontal className="w-4 h-4" />
+            <button className="text-zinc-600 hover:text-white">
+                <MoreHorizontal className="w-5 h-5" />
             </button>
         </div>
 
-        {/* Content Body */}
-        <div className="pl-[48px]">
-            <h3 className="text-base font-bold text-zinc-100 mb-1 leading-tight">{post.title}</h3>
-            <p className="text-sm text-zinc-400 leading-relaxed mb-3 line-clamp-3">{post.description}</p>
+        {/* Content */}
+        <div className="mb-4">
+            <h3 className="text-lg font-bold text-zinc-100 mb-2 leading-snug">{post.title}</h3>
+            <p className="text-sm text-zinc-400 leading-relaxed line-clamp-3">{post.description}</p>
+        </div>
 
-            {/* Badges / Stats */}
-            <div className="flex flex-wrap gap-2 mb-3">
-                {post.reward && (
-                    <div className="flex items-center px-2 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded text-yellow-500">
-                        <Trophy className="w-3 h-3 mr-1" />
-                        <span className="text-xs font-bold">{post.reward}</span>
+        {/* Features / Stats */}
+        <div className="space-y-3 mb-4">
+            {post.category === Category.BOUNTY && post.difficulty && (
+                <div>
+                    <div className="flex justify-between text-xs text-zinc-500 uppercase font-bold mb-1">
+                        <span>Risk Level</span>
+                        <span>{post.difficulty}%</span>
                     </div>
-                )}
-                {post.isHighStakes && (
-                    <div className="flex items-center px-2 py-1 bg-red-900/30 border border-red-500/40 rounded text-red-400">
-                        <Skull className="w-3 h-3 mr-1" />
-                        <span className="text-xs font-bold">HIGH STAKES</span>
-                    </div>
-                )}
-                {post.expiresAt && (
-                    <div className="flex items-center px-2 py-1 bg-red-500/10 border border-red-500/20 rounded text-red-500 animate-pulse">
-                        <Timer className="w-3 h-3 mr-1" />
-                        <span className="text-xs font-bold">{timeLeft}</span>
-                    </div>
-                )}
-                {post.location && (
-                    <div className="flex items-center text-zinc-500 text-xs">
-                         <MapPin className="w-3 h-3 mr-1" />
-                         {post.isLocationPrivate ? 'Secret Location' : post.location}
-                    </div>
-                )}
-            </div>
-
-            {/* Difficulty Bar (if bounty) */}
-            {post.difficulty !== undefined && (
-                <div className="mb-3 max-w-[200px]">
-                     <div className="flex justify-between text-[10px] text-zinc-500 mb-1 uppercase tracking-wider font-bold">
-                         <span>Risk Level</span>
-                         <span className={post.difficulty > 75 ? 'text-red-500' : 'text-yellow-500'}>{post.difficulty}%</span>
-                     </div>
-                     <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
-                         <div 
-                           className={`h-full ${post.difficulty > 75 ? 'bg-red-500' : 'bg-yellow-500'}`} 
-                           style={{ width: `${post.difficulty}%` }}
-                         ></div>
-                     </div>
+                    <RiskMeter level={post.difficulty} />
                 </div>
             )}
-
-            {/* Action Bar */}
-            <div className="flex items-center justify-between mt-2 pt-2 border-t border-zinc-800/50 max-w-sm">
-                 <button onClick={onChat} className="flex items-center group text-zinc-500 hover:text-white transition-colors">
-                     <MessageCircle className="w-4 h-4 mr-1.5" />
-                     <span className="text-xs font-medium">{post.attendees > 0 ? post.attendees : 'Reply'}</span>
-                 </button>
-                 
-                 <div className="flex items-center group text-zinc-500 hover:text-green-500 transition-colors">
-                     <Users className="w-4 h-4 mr-1.5" />
-                     <span className="text-xs font-medium">Join</span>
-                 </div>
-                 
-                 {isLocked && (
-                     <div className="flex items-center text-red-500">
-                         <Lock className="w-3 h-3 mr-1" />
-                         <span className="text-[10px] font-bold">LOCKED ({post.minRating}+)</span>
-                     </div>
-                 )}
+            
+            <div className="flex flex-wrap gap-2">
+                {post.category === Category.BOUNTY && (
+                    <span className="inline-flex items-center px-2.5 py-1 bg-yellow-500/10 text-yellow-500 text-xs font-bold rounded-lg border border-yellow-500/20">
+                        <Trophy className="w-3 h-3 mr-1.5" /> {post.reward || 'Bounty'}
+                    </span>
+                )}
+                {post.price && (
+                    <span className="inline-flex items-center px-2.5 py-1 bg-green-500/10 text-green-500 text-xs font-bold rounded-lg border border-green-500/20">
+                        {post.price}
+                    </span>
+                )}
+                {post.tags.map((tag, i) => (
+                    <span key={i} className="px-2.5 py-1 bg-zinc-800 text-zinc-400 text-xs rounded-lg border border-zinc-700">#{tag}</span>
+                ))}
             </div>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="flex items-center justify-between border-t border-zinc-800 pt-3 mt-2">
+             <div className="flex gap-4">
+                 <button onClick={onChat} className="flex items-center text-zinc-400 hover:text-white transition-colors text-sm font-medium">
+                     <MessageCircle className="w-4 h-4 mr-2" />
+                     {post.attendees > 0 ? `${post.attendees} Joined` : 'Join'}
+                 </button>
+                 <button className="flex items-center text-zinc-500 hover:text-red-400 transition-colors text-xs">
+                     <AlertTriangle className="w-3 h-3 mr-1" /> Report
+                 </button>
+             </div>
+             
+             {isLocked && (
+                 <div className="flex items-center text-zinc-500 text-xs font-bold">
+                     <Lock className="w-3 h-3 mr-1.5" /> Verified Only
+                 </div>
+             )}
         </div>
     </div>
   );

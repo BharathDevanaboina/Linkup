@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -11,31 +12,31 @@
         theme: {
             extend: {
                 colors: {
-                    black: '#000000',
+                    black: '#050505',
                     zinc: {
-                        850: '#1f1f22',
+                        800: '#27272a',
                         900: '#18181b',
                         950: '#09090b',
+                    },
+                    violet: {
+                        500: '#8b5cf6',
+                        600: '#6A4CFF', // Primary Brand Color
+                        700: '#5b21b6',
                     }
                 },
                 animation: {
                     'spin-slow': 'spin 8s linear infinite',
                     'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     'float': 'float 6s ease-in-out infinite',
-                    'grid-flow': 'gridMove 20s linear infinite',
-                    'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                    'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
                 },
                 keyframes: {
                     float: {
                         '0%, 100%': { transform: 'translateY(0)' },
-                        '50%': { transform: 'translateY(-20px)' },
-                    },
-                    gridMove: {
-                        '0%': { transform: 'translateY(0)' },
-                        '100%': { transform: 'translateY(40px)' },
+                        '50%': { transform: 'translateY(-10px)' },
                     },
                     fadeInUp: {
-                        '0%': { opacity: '0', transform: 'translateY(20px)' },
+                        '0%': { opacity: '0', transform: 'translateY(10px)' },
                         '100%': { opacity: '1', transform: 'translateY(0)' },
                     }
                 }
@@ -47,47 +48,32 @@
     <style>
       body { 
         font-family: 'Inter', sans-serif; 
-        background-color: #000000; /* Force True Black */
+        background-color: #050505;
         color: white;
       }
       h1, h2, h3, h4, button {
         font-family: 'Space Grotesk', sans-serif;
       }
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       
-      /* Hide Scrollbar but allow scrolling */
-      .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-      }
-      .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-      }
-      
-      /* Glassmorphism Utilities */
-      .glass {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+      .glass-panel {
+        background: rgba(24, 24, 27, 0.6);
+        backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.05);
       }
       
-      .glass-card {
-        background: #000000;
-        border: 1px solid #27272a;
+      /* Infinite Marquee */
+      .marquee-track {
+        display: flex;
+        animation: marquee 40s linear infinite;
       }
-      
-      .neon-text {
-        text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+      .hover\:pause-animation:hover {
+        animation-play-state: paused;
       }
-
-      /* Cyber Grid Background */
-      .cyber-grid {
-        background-size: 50px 50px;
-        background-image: 
-          linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-        transform: perspective(500px) rotateX(60deg);
-        transform-origin: top center;
+      @keyframes marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
       }
     </style>
   <script type="importmap">
@@ -97,12 +83,14 @@
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
     "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.4.2",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/"
   }
 }
 </script>
 </head>
-  <body class="bg-black text-white antialiased overflow-y-scroll overflow-x-hidden">
+  <body class="bg-[#050505] text-white antialiased">
     <div id="root"></div>
   </body>
 </html>
