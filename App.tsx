@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   Home, 
@@ -20,10 +21,12 @@ import { OnboardingScreens } from './components/OnboardingScreens';
 import { VerifiedBadge } from './components/VerifiedBadge';
 import { LandingPage } from './components/LandingPage';
 import { AuthPage } from './components/AuthPage';
+import { SetupScreen } from './components/SetupScreen';
 
-// Auth & DB imports (Relative paths)
+// Auth & DB imports
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { createPost, subscribeToPosts } from './services/db';
+import { isFirebaseConfigured } from './firebase';
 
 type View = 'home' | 'search' | 'messages' | 'profile';
 type Tab = 'Event' | 'Task' | 'Bounty' | 'Secret';
@@ -59,7 +62,7 @@ const MainApp = () => {
     const onboarded = localStorage.getItem('linkup_v2_onboarded');
     if (onboarded) setHasOnboarded(true);
 
-    // Subscribe to Firestore Posts
+    // Subscribe to Firestore Posts (or Mock Data if not configured)
     const unsubscribe = subscribeToPosts((fetchedPosts) => {
         setPosts(fetchedPosts);
     });
@@ -124,7 +127,7 @@ const MainApp = () => {
               {posts.filter(p => p.category === Category[currentTab.toUpperCase() as keyof typeof Category]).map(post => (
                   <PostCard key={post.id} post={post} onChat={() => setActiveChatUser(post.user)} />
               ))}
-              {posts.length === 0 && (
+              {posts.filter(p => p.category === Category[currentTab.toUpperCase() as keyof typeof Category]).length === 0 && (
                   <div className="text-center py-20 text-zinc-500">
                       <p>No active signals in this sector.</p>
                       <button onClick={() => setShowCreateModal(true)} className="text-violet-500 font-bold mt-2">Start a Signal</button>
@@ -204,6 +207,8 @@ const MainApp = () => {
   );
 
   // --- RENDER LOGIC ---
+  
+  // NOTE: SetupScreen removed to allow Mock Mode access
   
   // 1. Landing Page (Public)
   if (!hasEntered && !authUser) {
@@ -317,3 +322,4 @@ export default function App() {
     </AuthProvider>
   );
 }
+    

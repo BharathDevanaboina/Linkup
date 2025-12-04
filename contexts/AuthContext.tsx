@@ -1,20 +1,21 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { CURRENT_USER } from '../constants';
-import { User } from '../types';
+import { auth, googleProvider } from '../firebase';
+import * as firebaseAuth from 'firebase/auth';
 
-// Mock Auth Context
 interface AuthContextType {
-  user: any | null;
+  user: firebaseAuth.User | null;
   loading: boolean;
-  login: (email: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  login: (email: string) => Promise<void>; 
   signup: (email: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  loading: false,
+  loading: true,
+  loginWithGoogle: async () => {},
   login: async () => {},
   signup: async () => {},
   logout: async () => {},
@@ -23,60 +24,68 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<firebaseAuth.User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Listen to real Firebase Auth state changes
   useEffect(() => {
-    // Simulate checking for a session
-    const storedUser = localStorage.getItem('linkup_user');
-    if (storedUser) {
-        setUser(JSON.parse(storedUser));
+    // If auth is undefined (firebase not configured), we stop loading
+    if (!auth) {
+        setLoading(false);
+        return;
     }
-    setLoading(false);
+
+    const unsubscribe = firebaseAuth.onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
+  const loginWithGoogle = async () => {
+    if (!auth) {
+        // MOCK LOGIN for prototype mode
+        console.warn("Firebase Auth not configured. simulating login.");
+        const mockUser: any = {
+            uid: 'mock-user-123',
+            displayName: 'Guest User',
+            email: 'guest@linkup.com',
+            photoURL: 'https://ui-avatars.com/api/?name=Guest+User&background=6A4CFF&color=fff',
+            emailVerified: true
+        };
+        setUser(mockUser);
+        return;
+    }
+
+    try {
+      await firebaseAuth.signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error("Google Auth Error:", error);
+      throw error;
+    }
+  };
+
+  // Legacy/Email wrappers
   const login = async (email: string) => {
-    setLoading(true);
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Create a mock user object
-    const mockUser = {
-        uid: 'user_123',
-        email: email,
-        displayName: 'Demo User',
-        photoURL: 'https://ui-avatars.com/api/?name=Demo+User&background=6A4CFF&color=fff'
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('linkup_user', JSON.stringify(mockUser));
-    setLoading(false);
+    console.warn("Email login requested.");
   };
 
   const signup = async (email: string, name: string) => {
-    setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const mockUser = {
-        uid: 'user_' + Date.now(),
-        email: email,
-        displayName: name,
-        photoURL: `https://ui-avatars.com/api/?name=${name}&background=6A4CFF&color=fff`
-    };
-
-    setUser(mockUser);
-    localStorage.setItem('linkup_user', JSON.stringify(mockUser));
-    setLoading(false);
+    console.warn("Email signup requested.");
   };
 
   const logout = async () => {
-    setUser(null);
-    localStorage.removeItem('linkup_user');
+    if (auth) {
+        await firebaseAuth.signOut(auth);
+    } else {
+        setUser(null);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, loading, loginWithGoogle, login, signup, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );
 };
+    
